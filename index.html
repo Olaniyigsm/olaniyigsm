@@ -1598,6 +1598,16 @@
     font-weight: 700;
   }
 
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.4; }
+  }
+
+  @keyframes bounceArrow {
+    from { transform: translateX(-50%) translateY(0); }
+    to   { transform: translateX(-50%) translateY(6px); }
+  }
+
   @keyframes fadeInPop {
     from { opacity: 0; }
     to   { opacity: 1; }
@@ -1918,9 +1928,18 @@
       </a>
     </div>
 
-    <button class="btn-order" id="btn-step1" onclick="goStep(2)" disabled>
-      Continuer →
+    <button class="btn-order" id="btn-step1" onclick="goStep(2)" disabled
+      style="position:relative;overflow:hidden;">
+      <span id="btn-step1-text">
+        <span style="opacity:0.5;font-size:0.6rem;display:block;margin-bottom:0.2rem;letter-spacing:0.1em;">ÉTAPE SUIVANTE</span>
+        Remplir mes coordonnées →
+      </span>
     </button>
+    <div id="step1-hint" style="display:none;font-family:'Space Mono',monospace;font-size:0.55rem;
+      letter-spacing:0.06em;color:rgba(232,184,75,0.6);text-align:center;margin-top:0.5rem;
+      animation:pulse 1.5s infinite;">
+      ☝️ Appuyez sur le bouton doré ci-dessus pour continuer
+    </div>
   </div>
 
   <!-- ÉTAPE 2 : Détails -->
@@ -1995,7 +2014,10 @@
     </div>
     <div class="btn-row">
       <button class="btn-back" onclick="goStep(1)">← Retour</button>
-      <button class="btn-order" onclick="goStep(3)">Récapitulatif →</button>
+      <button class="btn-order" onclick="goStep(3)" style="flex:2;position:relative;">
+        <span style="opacity:0.5;font-size:0.55rem;display:block;margin-bottom:0.15rem;letter-spacing:0.1em;">ÉTAPE SUIVANTE</span>
+        Choisir mon paiement →
+      </button>
     </div>
   </div>
 
@@ -2021,16 +2043,6 @@
           <div class="pay-detail">+229 01 96 97 29 33 · Sorbou Tessilimi</div>
         </div>
         <div class="pay-check" id="chk-mtn1">✓</div>
-      </div>
-
-      <!-- MTN MoMo 2 -->
-      <div class="pay-option" onclick="selectPay('mtn2')" id="pay-mtn2">
-        <div class="pay-logo" style="background:#FFCC00;color:#000;">MTN</div>
-        <div class="pay-info">
-          <div class="pay-name">MTN Mobile Money</div>
-          <div class="pay-detail">+229 01 97 64 02 18 · Sorbou Tessilimi</div>
-        </div>
-        <div class="pay-check" id="chk-mtn2">✓</div>
       </div>
 
       <!-- Moov -->
@@ -2153,8 +2165,9 @@
 
     <div class="btn-row">
       <button class="btn-back" onclick="goStep(2)">← Modifier</button>
-      <button class="btn-order" id="btn-confirm" onclick="goStep(4)">
-        💳 Confirmer la commande
+      <button class="btn-order" id="btn-confirm" onclick="goStep(4)" style="flex:2;position:relative;">
+        <span style="opacity:0.5;font-size:0.55rem;display:block;margin-bottom:0.15rem;letter-spacing:0.1em;">DERNIÈRE ÉTAPE</span>
+        📲 Envoyer ma commande
       </button>
     </div>
     <p class="order-notice" id="order-notice">
@@ -2744,8 +2757,9 @@ function selectRentTool(id) {
     services.rent.emoji = tool.emoji;
   }
   document.getElementById('btn-step1').disabled = false;
-  // Scroll vers bouton Continuer
-  autoScroll('btn-step1');
+  const hintRT = document.getElementById('step1-hint');
+  if (hintRT) hintRT.style.display = 'block';
+  autoScroll('btn-step1', 700);
 }
 
 function selectService(code) {
@@ -2766,7 +2780,7 @@ function selectService(code) {
     // Réinitialiser la recherche RENT
     const rs = document.getElementById('rent-search');
     if (rs) { rs.value = ''; filterRentTools(''); }
-    autoScroll('rent-selector');
+    autoScroll('rent-selector', 500);
   } else if (code === 'vente') {
     document.getElementById('vente-selector').style.display = 'block';
     renderVenteList();
@@ -2774,11 +2788,12 @@ function selectService(code) {
     // Réinitialiser la recherche VENTE
     const vs = document.getElementById('vente-search');
     if (vs) { vs.value = ''; filterVenteProducts(''); }
-    autoScroll('vente-selector');
+    autoScroll('vente-selector', 500);
   } else {
     document.getElementById('btn-step1').disabled = false;
-    // Scroll vers le bouton Continuer
-    autoScroll('btn-step1');
+    const hintS = document.getElementById('step1-hint');
+    if (hintS) hintS.style.display = 'block';
+    autoScroll('btn-step1', 700);
   }
 }
 
@@ -2789,6 +2804,19 @@ function updateProgress(n) {
     el.className = 'progress-step';
     if (i + 1 < n) el.classList.add('done');
     else if (i + 1 === n) el.classList.add('active');
+  });
+
+  // Mettre à jour les labels des étapes avec indication claire
+  const stepLabels = {
+    1: ['1 · Service ✓', '2 · Mes infos →', '3 · Paiement', '4 · Envoi'],
+    2: ['1 · Service ✓', '2 · Mes infos ✓', '3 · Paiement →', '4 · Envoi'],
+    3: ['1 · Service ✓', '2 · Mes infos ✓', '3 · Paiement →', '4 · Envoi'],
+    4: ['1 · ✓', '2 · ✓', '3 · ✓', '4 · Envoyé ✓'],
+  };
+  const labels = stepLabels[n] || stepLabels[1];
+  ['step1-label','step2-label','step3-label','step4-label'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = labels[i];
   });
 }
 
@@ -2803,6 +2831,9 @@ function goStep(n) {
   }
 
   if (n === 2) {
+    // Cacher le hint
+    const hint = document.getElementById('step1-hint');
+    if (hint) hint.style.display = 'none';
     const deviceFields = document.getElementById('device-fields');
     const isRent = selectedService === 'rent' || selectedService === 'vente';
     deviceFields.style.display = isRent ? 'none' : 'block';
@@ -2857,7 +2888,7 @@ function goStep(n) {
   // puis vers le premier champ interactif de l'étape
   const targets = { 1: 'step1', 2: 'ord-nom', 3: 'order-summary' };
   const target  = targets[n] || 'order-section';
-  autoScroll(target, 200);
+  autoScroll(target, 500);
 }
 
 function buildSummary() {
@@ -3142,7 +3173,6 @@ function clearSearch() {
 
 const payMethods = {
   mtn1:         { name: 'MTN Mobile Money',   detail: '📞 +229 01 96 97 29 33\n👤 Sorbou Tessilimi' },
-  mtn2:         { name: 'MTN Mobile Money',   detail: '📞 +229 01 97 64 02 18\n👤 Sorbou Tessilimi' },
   moov:         { name: 'Moov Money',         detail: '📞 +229 01 55 46 50 58\n👤 Sorbou Tessilimi' },
   binance:      { name: 'Binance Pay Manuel', detail: '🆔 ID : 519319167' },
   usdt:         { name: 'USDT BEP20',         detail: '📋 0x7cc13f969a4a9bac5d55e7fcd4bd92ede6e3396b' },
@@ -3169,7 +3199,7 @@ function selectPay(id) {
   box.style.display = 'block';
   toggleConverter(id);
   document.getElementById('capture-upload-box').style.display = 'block';
-  autoScroll('capture-upload-box', 400);
+  autoScroll('capture-upload-box', 700);
 }
 
 
@@ -3230,7 +3260,7 @@ function handleCapture(input) {
         statusEl.innerHTML = '<span style="color:#2ecc71;">✅ Image uploadée avec succès</span>';
       }
       document.getElementById('upload-label').style.borderColor = 'rgba(46,204,113,0.4)';
-      autoScroll('btn-confirm', 400);
+      autoScroll('btn-confirm', 800);
     })
     .catch(err => {
       captureUrl = null;
@@ -3356,8 +3386,11 @@ function selectVenteOption(prodId, optIdx) {
   services.vente.delai = 'Immédiat après paiement';
 
   document.getElementById('btn-step1').disabled = false;
-  // Scroll vers bouton Continuer
-  autoScroll('btn-step1');
+  // Afficher l'indication visuelle
+  const hint = document.getElementById('step1-hint');
+  if (hint) hint.style.display = 'block';
+  // Scroll vers le bouton
+  autoScroll('btn-step1', 700);
 }
 
 function checkVenteCustom() {
@@ -3370,6 +3403,9 @@ function checkVenteCustom() {
     selectedVenteProduct = 'custom';
     selectedVenteOption  = 0;
     document.getElementById('btn-step1').disabled = false;
+    const hintC = document.getElementById('step1-hint');
+    if (hintC) hintC.style.display = 'block';
+    autoScroll('btn-step1', 700);
   }
 }
 
@@ -3425,18 +3461,72 @@ async function sendCustomOrder() {
 // ══════════════════════════════════════════════════════════
 // SCROLL AUTOMATIQUE — Guide le client vers l'action suivante
 // ══════════════════════════════════════════════════════════
-function autoScroll(elementId, delay = 350) {
+function autoScroll(elementId, delay = 600) {
   setTimeout(() => {
     const el = document.getElementById(elementId);
     if (!el) return;
-    // Calcul pour laisser un peu d'espace au-dessus
-    const offset = el.getBoundingClientRect().top + window.scrollY - 80;
+
+    // Scroll plus lent avec plus d'espace en haut
+    const offset = el.getBoundingClientRect().top + window.scrollY - 100;
     window.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
-    // Surbrillance dorée pendant 1.5s pour attirer l'œil
-    el.style.transition = 'box-shadow 0.3s ease';
-    el.style.boxShadow  = '0 0 0 2px rgba(232,184,75,0.7), 0 0 24px rgba(232,184,75,0.25)';
-    setTimeout(() => { el.style.boxShadow = ''; el.style.transition = ''; }, 1800);
+
+    // Attendre que le scroll soit terminé puis afficher l'indicateur
+    setTimeout(() => {
+      // Surbrillance dorée prolongée
+      el.style.transition = 'box-shadow 0.4s ease';
+      el.style.boxShadow  = '0 0 0 3px rgba(232,184,75,0.8), 0 0 30px rgba(232,184,75,0.3)';
+
+      // Flèche animée au-dessus de l'élément
+      showNextArrow(el);
+
+      setTimeout(() => {
+        el.style.boxShadow  = '';
+        el.style.transition = '';
+        removeNextArrow();
+      }, 3000);
+    }, 500);
   }, delay);
+}
+
+// Flèche indicatrice "→ Action ici"
+let _arrowEl = null;
+function showNextArrow(targetEl) {
+  removeNextArrow();
+  _arrowEl = document.createElement('div');
+  _arrowEl.id = 'next-arrow-indicator';
+
+  const rect = targetEl.getBoundingClientRect();
+  const isBtn = targetEl.tagName === 'BUTTON';
+
+  _arrowEl.style.cssText = `
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    top: ${Math.max(10, rect.top - 48)}px;
+    z-index: 99970;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    pointer-events: none;
+    animation: bounceArrow 0.6s ease infinite alternate;`;
+
+  _arrowEl.innerHTML = `
+    <div style="font-family:'Space Mono',monospace;font-size:0.55rem;
+      letter-spacing:0.12em;text-transform:uppercase;color:#e8b84b;
+      background:rgba(10,10,10,0.9);border:1px solid rgba(232,184,75,0.4);
+      padding:0.25rem 0.7rem;white-space:nowrap;backdrop-filter:blur(4px);">
+      ${isBtn ? '👆 Appuyez ici' : '👇 Étape suivante'}
+    </div>
+    <div style="color:#e8b84b;font-size:1.1rem;line-height:1;">▼</div>`;
+
+  document.body.appendChild(_arrowEl);
+}
+
+function removeNextArrow() {
+  if (_arrowEl) { _arrowEl.remove(); _arrowEl = null; }
+  const old = document.getElementById('next-arrow-indicator');
+  if (old) old.remove();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -3965,7 +4055,7 @@ function closeTrackingPopup() {
     setTimeout(() => {
       overlay.remove();
       // Scroll vers section suivi après fermeture
-      autoScroll('track-code-input', 300);
+      autoScroll('track-code-input', 600);
       // Lancer la recherche automatiquement
       trackOrder();
     }, 250);
