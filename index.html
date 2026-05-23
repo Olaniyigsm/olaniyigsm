@@ -4,8 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="description" content="Olaniyi Mobile Repair Center — Réparation smartphones, location & vente de logiciels GSM, déblocage IMEI et iCloud à Porto-Novo, Bénin.">
-<meta name="theme-color" content="#0a0a0a">
+<meta name="theme-color" id="meta-theme-color" content="#0a0a0a">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="color-scheme" content="dark light">
+<!-- Rendu net sur tous les écrans -->
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Olaniyi Mobile Repair Center – Porto-Novo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,14 +16,37 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --noir: #0a0a0a;
-    --blanc: #f5f0e8;
-    --or: #e8b84b;
-    --or-pale: #f5d98a;
-    --rouge: #c0392b;
-    --vert: #1a7a4a;
-    --gris: #2a2a2a;
+  /* ── MODE SOMBRE (défaut) ── */
+  :root,
+  [data-theme="dark"] {
+    --noir:      #0a0a0a;
+    --blanc:     #f5f0e8;
+    --or:        #e8b84b;
+    --or-pale:   #f5d98a;
+    --rouge:     #c0392b;
+    --vert:      #1a7a4a;
+    --gris:      #2a2a2a;
+    --bg-card:   rgba(255,255,255,0.03);
+    --bg-input:  rgba(255,255,255,0.05);
+    --border:    rgba(232,184,75,0.2);
+    --text-muted: rgba(245,240,232,0.45);
+    --surface:   #111111;
+  }
+
+  /* ── MODE CLAIR ── */
+  [data-theme="light"] {
+    --noir:      #f8f6f0;
+    --blanc:     #1a1a1a;
+    --or:        #c8960a;
+    --or-pale:   #a07008;
+    --rouge:     #c0392b;
+    --vert:      #1a7a4a;
+    --gris:      #e8e4dc;
+    --bg-card:   rgba(0,0,0,0.04);
+    --bg-input:  rgba(0,0,0,0.06);
+    --border:    rgba(160,112,8,0.25);
+    --text-muted: rgba(26,26,26,0.5);
+    --surface:   #eeece6;
   }
 
   body {
@@ -28,6 +54,15 @@
     color: var(--blanc);
     font-family: 'DM Sans', sans-serif;
     overflow-x: hidden;
+    /* Rendu net sur écrans haute densité */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* Empêcher le flou sur les transformations */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    /* Transition douce pour le changement de thème */
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   /* ── GRAIN OVERLAY ── */
@@ -1621,6 +1656,85 @@
     50%     { opacity: 1;   transform: scaleX(1); }
   }
 
+  /* ── MODE CLAIR — adaptations ── */
+  [data-theme="light"] body,
+  [data-theme="light"] {
+    background-color: #f8f6f0;
+    color: #1a1a1a;
+  }
+  [data-theme="light"] header,
+  [data-theme="light"] .service-block,
+  [data-theme="light"] .formules,
+  [data-theme="light"] .promo-section,
+  [data-theme="light"] .contact,
+  [data-theme="light"] .avis-section,
+  [data-theme="light"] .order-section,
+  [data-theme="light"] .tracking-section {
+    background-color: #f0ede5;
+    border-color: rgba(160,112,8,0.15);
+  }
+  [data-theme="light"] .service-block:nth-child(even) { background-color: #e8e4dc; }
+  [data-theme="light"] h1,
+  [data-theme="light"] .service-title,
+  [data-theme="light"] .formule-name,
+  [data-theme="light"] .order-section h2,
+  [data-theme="light"] .avis-section h2,
+  [data-theme="light"] .tracking-section h2 { color: #1a1a1a; }
+  [data-theme="light"] .service-desc,
+  [data-theme="light"] .formule-desc,
+  [data-theme="light"] .avis-text { color: rgba(26,26,26,0.65); }
+  [data-theme="light"] .tag {
+    border-color: rgba(160,112,8,0.3);
+    color: rgba(26,26,26,0.55);
+    background: rgba(160,112,8,0.06);
+  }
+  [data-theme="light"] .service-card {
+    background: rgba(0,0,0,0.03);
+    border-color: rgba(160,112,8,0.2);
+  }
+  [data-theme="light"] .service-card:hover,
+  [data-theme="light"] .service-card.selected {
+    background: rgba(160,112,8,0.08);
+    border-color: var(--or);
+  }
+  [data-theme="light"] .formule-card {
+    background: rgba(0,0,0,0.03);
+    border-color: rgba(160,112,8,0.15);
+  }
+  [data-theme="light"] input,
+  [data-theme="light"] select,
+  [data-theme="light"] textarea {
+    background: rgba(0,0,0,0.05) !important;
+    border-color: rgba(160,112,8,0.25) !important;
+    color: #1a1a1a !important;
+  }
+  [data-theme="light"] input::placeholder,
+  [data-theme="light"] textarea::placeholder { color: rgba(26,26,26,0.35) !important; }
+  [data-theme="light"] .pay-option {
+    background: rgba(0,0,0,0.03);
+    border-color: rgba(160,112,8,0.15);
+  }
+  [data-theme="light"] .pay-name { color: #1a1a1a; }
+  [data-theme="light"] .pay-detail { color: rgba(26,26,26,0.5); }
+  [data-theme="light"] footer { background: #e0ddd5; }
+  [data-theme="light"] .lang-switcher {
+    background: rgba(240,237,229,0.95);
+    border-color: rgba(160,112,8,0.3);
+  }
+  [data-theme="light"] .lang-btn { color: rgba(26,26,26,0.55); }
+  [data-theme="light"] .summary-row { color: rgba(26,26,26,0.55); }
+  [data-theme="light"] .summary-row span:last-child { color: #1a1a1a; }
+  [data-theme="light"] .order-section::before { color: rgba(0,0,0,0.04); }
+  [data-theme="light"] .adm-order-card { border-color: rgba(160,112,8,0.15); }
+  [data-theme="light"] .adm-card-header { background: rgba(160,112,8,0.06); }
+  [data-theme="light"] .adm-info-val { color: #1a1a1a; }
+
+  /* ── RENDU NET HAUTE DENSITÉ ── */
+  img, svg { image-rendering: crisp-edges; }
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    body { -webkit-font-smoothing: subpixel-antialiased; }
+  }
+
   /* ── SÉLECTEUR DE LANGUE ── */
   .lang-switcher {
     position: fixed;
@@ -1665,6 +1779,7 @@
   <button class="lang-btn active" id="lang-fr" onclick="applyLang('fr')">🇫🇷 FR</button>
   <button class="lang-btn" id="lang-en" onclick="applyLang('en')">🇬🇧 EN</button>
   <button class="lang-btn" id="lang-yo" onclick="applyLang('yo')">🇳🇬 YO</button>
+  <button class="lang-btn" id="theme-btn" onclick="toggleTheme()" title="Mode clair / sombre" style="font-size:0.75rem;padding:0.3rem 0.5rem;">🌙</button>
 </div>
 
 <!-- BOUTON NOTIFICATIONS -->
@@ -3457,6 +3572,37 @@ async function sendCustomOrder() {
   }, 1500);
 }
 
+
+// ══════════════════════════════════════════════════════════
+// MODE SOMBRE / CLAIR
+// ══════════════════════════════════════════════════════════
+function toggleTheme() {
+  const html    = document.documentElement;
+  const btn     = document.getElementById('theme-btn');
+  const current = html.getAttribute('data-theme') || 'dark';
+  const next    = current === 'dark' ? 'light' : 'dark';
+
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+  if (btn) btn.textContent = next === 'dark' ? '🌙' : '☀️';
+
+  // Mettre à jour meta theme-color
+  const metaTheme = document.querySelector('meta[name="theme-color"]');
+  if (metaTheme) metaTheme.content = next === 'dark' ? '#0a0a0a' : '#f8f6f0';
+}
+
+// Appliquer le thème sauvegardé immédiatement
+(function initTheme() {
+  const saved = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  // Mettre à jour le bouton après chargement DOM
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('theme-btn');
+    if (btn) btn.textContent = saved === 'dark' ? '🌙' : '☀️';
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) metaTheme.content = saved === 'dark' ? '#0a0a0a' : '#f8f6f0';
+  });
+})();
 
 // ══════════════════════════════════════════════════════════
 // SCROLL AUTOMATIQUE — Guide le client vers l'action suivante
