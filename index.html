@@ -1657,6 +1657,18 @@
   <button class="lang-btn" id="lang-yo" onclick="applyLang('yo')">🇳🇬 YO</button>
 </div>
 
+<!-- BOUTON NOTIFICATIONS -->
+<div id="notif-btn-wrapper" style="position:fixed;top:4rem;right:1rem;z-index:9998;">
+  <button id="notif-btn" onclick="requestNotifPermission()" style="
+    font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:0.08em;
+    text-transform:uppercase;background:rgba(10,10,10,0.9);
+    border:1px solid rgba(232,184,75,0.3);color:rgba(245,240,232,0.6);
+    padding:0.4rem 0.7rem;cursor:pointer;transition:all 0.2s;
+    backdrop-filter:blur(8px);display:flex;align-items:center;gap:0.4rem;">
+    🔔 Activer les notifications
+  </button>
+</div>
+
 <!-- HEADER -->
 <header>
   <div class="badge">Porto-Novo · Bénin · Afrique de l'Ouest</div>
@@ -1703,7 +1715,40 @@
 
   <!-- ÉTAPE 1 : Choix du service -->
   <div id="step1">
-    <div class="service-cards">
+
+    <!-- Barre de recherche services -->
+    <div style="position:relative;margin-bottom:1rem;">
+      <input type="text" id="service-search"
+        placeholder="🔍 Rechercher un service, logiciel ou outil…"
+        oninput="filterServices(this.value)"
+        style="width:100%;background:rgba(255,255,255,0.05);
+          border:1px solid rgba(232,184,75,0.3);color:#f5f0e8;
+          font-family:'DM Sans',sans-serif;font-size:1rem;
+          padding:0.85rem 1rem 0.85rem 2.8rem;outline:none;
+          transition:all 0.2s;box-sizing:border-box;"
+        onfocus="this.style.borderColor='#e8b84b';this.style.background='rgba(232,184,75,0.05)'"
+        onblur="this.style.borderColor='rgba(232,184,75,0.3)';this.style.background='rgba(255,255,255,0.05)'" />
+      <span style="position:absolute;left:0.9rem;top:50%;transform:translateY(-50%);
+        font-size:1rem;pointer-events:none;">🔍</span>
+      <button id="search-clear" onclick="clearSearch()" style="
+        display:none;position:absolute;right:0.8rem;top:50%;transform:translateY(-50%);
+        background:none;border:none;color:rgba(245,240,232,0.4);cursor:pointer;
+        font-size:1rem;padding:0.2rem;">✕</button>
+    </div>
+
+    <!-- Message aucun résultat -->
+    <div id="no-result" style="display:none;text-align:center;padding:1.2rem;
+      font-family:'Space Mono',monospace;font-size:0.65rem;letter-spacing:0.08em;
+      color:rgba(245,240,232,0.35);border:1px solid rgba(232,184,75,0.1);
+      background:rgba(232,184,75,0.03);">
+      ❌ Aucun service trouvé — essayez un autre mot clé
+      <br><a href="https://wa.me/22996972933" target="_blank"
+        style="color:#e8b84b;text-decoration:none;display:inline-block;margin-top:0.5rem;">
+        💬 Contactez-nous sur WhatsApp
+      </a>
+    </div>
+
+    <div class="service-cards" id="service-cards-grid">
       <div class="service-card" onclick="selectService('imei')" id="card-imei">
         <div class="selected-check">✓</div>
         <span class="card-emoji">🔓</span>
@@ -1753,6 +1798,29 @@
       <div style="font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(245,240,232,0.4);margin-bottom:0.8rem;">
         Choisissez votre logiciel ↓
       </div>
+
+      <!-- Barre de recherche RENT -->
+      <div style="position:relative;margin-bottom:0.8rem;">
+        <input type="text" id="rent-search"
+          placeholder="🔍 Rechercher un logiciel de location…"
+          oninput="filterRentTools(this.value)"
+          style="width:100%;background:rgba(255,255,255,0.04);
+            border:1px solid rgba(232,184,75,0.25);color:#f5f0e8;
+            font-family:'DM Sans',sans-serif;font-size:1rem;
+            padding:0.75rem 2.5rem 0.75rem 0.9rem;outline:none;
+            transition:all 0.2s;box-sizing:border-box;"
+          onfocus="this.style.borderColor='#e8b84b'"
+          onblur="this.style.borderColor='rgba(232,184,75,0.25)'" />
+        <button onclick="clearRentSearch()" id="rent-search-clear" style="
+          display:none;position:absolute;right:0.7rem;top:50%;transform:translateY(-50%);
+          background:none;border:none;color:rgba(245,240,232,0.4);cursor:pointer;font-size:0.9rem;">✕</button>
+      </div>
+      <div id="rent-no-result" style="display:none;font-family:'Space Mono',monospace;
+        font-size:0.6rem;letter-spacing:0.06em;color:rgba(245,240,232,0.3);
+        text-align:center;padding:0.8rem;border:1px solid rgba(232,184,75,0.1);">
+        ❌ Aucun logiciel trouvé
+      </div>
+
       <div style="display:flex;flex-direction:column;gap:0.5rem;" id="rent-tools-list">
         <!-- Généré par JS -->
       </div>
@@ -1775,6 +1843,29 @@
       <div style="font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(245,240,232,0.4);margin-bottom:1rem;">
         Choisissez le produit et la durée ↓
       </div>
+
+      <!-- Barre de recherche VENTE -->
+      <div style="position:relative;margin-bottom:0.8rem;">
+        <input type="text" id="vente-search"
+          placeholder="🔍 Rechercher un logiciel ou dongle…"
+          oninput="filterVenteProducts(this.value)"
+          style="width:100%;background:rgba(255,255,255,0.04);
+            border:1px solid rgba(232,184,75,0.25);color:#f5f0e8;
+            font-family:'DM Sans',sans-serif;font-size:1rem;
+            padding:0.75rem 2.5rem 0.75rem 0.9rem;outline:none;
+            transition:all 0.2s;box-sizing:border-box;"
+          onfocus="this.style.borderColor='#e8b84b'"
+          onblur="this.style.borderColor='rgba(232,184,75,0.25)'" />
+        <button onclick="clearVenteSearch()" id="vente-search-clear" style="
+          display:none;position:absolute;right:0.7rem;top:50%;transform:translateY(-50%);
+          background:none;border:none;color:rgba(245,240,232,0.4);cursor:pointer;font-size:0.9rem;">✕</button>
+      </div>
+      <div id="vente-no-result" style="display:none;font-family:'Space Mono',monospace;
+        font-size:0.6rem;letter-spacing:0.06em;color:rgba(245,240,232,0.3);
+        text-align:center;padding:0.8rem;border:1px solid rgba(232,184,75,0.1);">
+        ❌ Aucun produit trouvé — <a href="https://wa.me/22996972933" target="_blank" style="color:#e8b84b;text-decoration:none;">Contactez-nous</a>
+      </div>
+
       <div id="vente-list"><!-- Généré par JS --></div>
 
       <!-- Section personnalisée -->
@@ -2672,13 +2763,17 @@ function selectService(code) {
     document.getElementById('rent-selector').style.display = 'block';
     renderRentTools();
     document.getElementById('btn-step1').disabled = true;
-    // Scroll vers la liste des logiciels
+    // Réinitialiser la recherche RENT
+    const rs = document.getElementById('rent-search');
+    if (rs) { rs.value = ''; filterRentTools(''); }
     autoScroll('rent-selector');
   } else if (code === 'vente') {
     document.getElementById('vente-selector').style.display = 'block';
     renderVenteList();
     document.getElementById('btn-step1').disabled = true;
-    // Scroll vers la liste des produits
+    // Réinitialiser la recherche VENTE
+    const vs = document.getElementById('vente-search');
+    if (vs) { vs.value = ''; filterVenteProducts(''); }
     autoScroll('vente-selector');
   } else {
     document.getElementById('btn-step1').disabled = false;
@@ -2909,7 +3004,141 @@ function toggleConverter(payId) {
   if (box.style.display === 'block' && !_usdtRate) fetchUsdtRate();
 }
 
-// ── PAIEMENT ─────────────────────────────────────────────
+// ── RECHERCHE RENT ────────────────────────────────────────
+function filterRentTools(query) {
+  const q     = query.trim().toLowerCase();
+  const clear = document.getElementById('rent-search-clear');
+  const noRes = document.getElementById('rent-no-result');
+  if (clear) clear.style.display = q ? 'block' : 'none';
+
+  let found = 0;
+  rentTools.forEach(t => {
+    const card = document.getElementById('rtcard-' + t.id);
+    if (!card) return;
+    const matches = !q ||
+      t.name.toLowerCase().includes(q) ||
+      t.duree.toLowerCase().includes(q) ||
+      t.prix.replace(/\s/g,'').includes(q.replace(/\s/g,''));
+    card.style.display = matches ? '' : 'none';
+    if (matches) found++;
+  });
+  if (noRes) noRes.style.display = found === 0 && q ? 'block' : 'none';
+}
+
+function clearRentSearch() {
+  const inp = document.getElementById('rent-search');
+  if (inp) { inp.value = ''; filterRentTools(''); inp.focus(); }
+}
+
+// ── RECHERCHE VENTE ───────────────────────────────────────
+function filterVenteProducts(query) {
+  const q     = query.trim().toLowerCase();
+  const clear = document.getElementById('vente-search-clear');
+  const noRes = document.getElementById('vente-no-result');
+  if (clear) clear.style.display = q ? 'block' : 'none';
+
+  let found = 0;
+  venteProducts.forEach(p => {
+    const card = document.getElementById('vp-header-' + p.id);
+    const opts = document.getElementById('vp-opts-'   + p.id);
+    // Chercher dans nom et dans les options (label + prix)
+    const optText = p.options.map(o => o.label + ' ' + o.prix).join(' ').toLowerCase();
+    const matches = !q ||
+      p.name.toLowerCase().includes(q) ||
+      optText.includes(q);
+
+    // Le conteneur parent de chaque produit
+    const parent = card ? card.parentElement : null;
+    if (parent) {
+      parent.style.display = matches ? '' : 'none';
+      // Ouvrir automatiquement si une seule correspondance
+      if (matches && q) {
+        if (opts) opts.style.display = 'block';
+        const arrow = document.getElementById('vp-arrow-' + p.id);
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
+      }
+      if (matches) found++;
+    }
+  });
+  if (noRes) noRes.style.display = found === 0 && q ? 'block' : 'none';
+}
+
+function clearVenteSearch() {
+  const inp = document.getElementById('vente-search');
+  if (inp) { inp.value = ''; filterVenteProducts(''); inp.focus(); }
+  // Refermer tous les accordéons
+  venteProducts.forEach(p => {
+    const opts  = document.getElementById('vp-opts-'  + p.id);
+    const arrow = document.getElementById('vp-arrow-' + p.id);
+    if (opts)  opts.style.display = 'none';
+    if (arrow) arrow.style.transform = '';
+  });
+}
+
+// ── RECHERCHE SERVICES ────────────────────────────────────
+const serviceKeywords = {
+  imei:   ['déblocage','imei','déverrouillage','réseau','network','unlock','sim','opérateur'],
+  frp:    ['frp','factory reset','google account','compte google','bypass','samsung frp','android'],
+  icloud: ['icloud','apple','iphone','activation lock','find my','mdm apple','désactiver'],
+  flash:  ['flash','firmware','logiciel','software','brick','bootloop','démarrage','réparation logicielle'],
+  mdm:    ['mdm','tecno','infinix','itel','régional','bloqué','verrouillé','region','appareil verrouillé'],
+  rent:   ['location','louer','rent','pandora','dft','unlock tool','mdm fix','tsm','tfm','amt','tr tool',
+           'anonyshu','toja','hydra','knox','chimera','eft','sigma','krdt','mobilesea','phoenix'],
+  vente:  ['achat','vente','acheter','activation','licence','android win','octoplus','zhizhen','borneo',
+           'windows','idm','internet download','mobiledit','an tool','sigma plus','xinzhizhao'],
+};
+
+function filterServices(query) {
+  const q     = query.trim().toLowerCase();
+  const clear = document.getElementById('search-clear');
+  const noRes = document.getElementById('no-result');
+  const grid  = document.getElementById('service-cards-grid');
+
+  if (clear) clear.style.display = q ? 'block' : 'none';
+
+  if (!q) {
+    // Tout afficher
+    document.querySelectorAll('.service-card').forEach(card => {
+      card.style.display = '';
+    });
+    if (grid) grid.style.gridTemplateColumns = '';
+    if (noRes) noRes.style.display = 'none';
+    return;
+  }
+
+  let found = 0;
+  Object.keys(serviceKeywords).forEach(code => {
+    const card     = document.getElementById('card-' + code);
+    const keywords = serviceKeywords[code];
+    const matches  = keywords.some(k => k.includes(q) || q.includes(k.split(' ')[0]));
+    // Chercher aussi dans le nom affiché de la carte
+    const cardText = card ? card.textContent.toLowerCase() : '';
+    const textMatch = cardText.includes(q);
+
+    if (card) {
+      if (matches || textMatch) {
+        card.style.display = '';
+        found++;
+      } else {
+        card.style.display = 'none';
+      }
+    }
+  });
+
+  // Ajuster la grille si 1 seul résultat
+  if (grid) {
+    grid.style.gridTemplateColumns = found === 1 ? '1fr' : '';
+  }
+
+  if (noRes) noRes.style.display = found === 0 ? 'block' : 'none';
+}
+
+function clearSearch() {
+  const input = document.getElementById('service-search');
+  if (input) { input.value = ''; filterServices(''); input.focus(); }
+}
+
+
 
 const payMethods = {
   mtn1:         { name: 'MTN Mobile Money',   detail: '📞 +229 01 96 97 29 33\n👤 Sorbou Tessilimi' },
@@ -3347,7 +3576,131 @@ function showStatusBanner(orderCode, status, note) {
   setTimeout(() => banner?.remove(), 10000);
 }
 
-// ── Init notifications admin quand panel ouvert ───────────
+// ── Bouton activation notifications ──────────────────────
+async function requestNotifPermission() {
+  const btn = document.getElementById('notif-btn');
+  if (!btn) return;
+
+  // Vérifier support
+  if (!('Notification' in window)) {
+    btn.innerHTML = '❌ Non supporté';
+    btn.style.borderColor = 'rgba(231,76,60,0.4)';
+    btn.style.color = '#e74c3c';
+    return;
+  }
+
+  // Déjà accordé
+  if (Notification.permission === 'granted') {
+    btn.innerHTML = '✅ Notifications activées';
+    btn.style.borderColor = 'rgba(46,204,113,0.4)';
+    btn.style.color = '#2ecc71';
+    setTimeout(() => {
+      document.getElementById('notif-btn-wrapper').style.display = 'none';
+    }, 2000);
+    return;
+  }
+
+  // Refusé
+  if (Notification.permission === 'denied') {
+    btn.innerHTML = '🚫 Notifications bloquées';
+    btn.style.borderColor = 'rgba(231,76,60,0.4)';
+    btn.style.color = '#e74c3c';
+    // Guider l'utilisateur
+    alert('Les notifications sont bloquées. Pour les activer :\nChrome → ⋮ → Paramètres → Notifications du site → olaniyigsm.vercel.app → Autoriser');
+    return;
+  }
+
+  // Demander permission
+  btn.innerHTML = '⏳ En attente…';
+  btn.disabled = true;
+
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      btn.innerHTML = '✅ Activées !';
+      btn.style.borderColor = 'rgba(46,204,113,0.4)';
+      btn.style.color = '#2ecc71';
+      btn.disabled = false;
+
+      // Enregistrer le token FCM
+      await initNotifications('client');
+
+      setTimeout(() => {
+        document.getElementById('notif-btn-wrapper').style.display = 'none';
+      }, 2500);
+    } else {
+      btn.innerHTML = '🔕 Refusées';
+      btn.style.color = '#e74c3c';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    btn.innerHTML = '🔔 Activer les notifications';
+    btn.disabled = false;
+    console.warn('Permission error:', e.message);
+  }
+}
+
+// Vérifier au chargement si déjà accordé
+document.addEventListener('DOMContentLoaded', () => {
+  const wrapper = document.getElementById('notif-btn-wrapper');
+  const btn     = document.getElementById('notif-btn');
+
+  if (!('Notification' in window)) {
+    if (wrapper) wrapper.style.display = 'none';
+    return;
+  }
+
+  // Relire la permission en temps réel
+  const perm = Notification.permission;
+  console.log('Permission notification :', perm);
+
+  if (perm === 'granted') {
+    if (btn) {
+      btn.innerHTML = '✅ Notifications activées';
+      btn.style.borderColor = 'rgba(46,204,113,0.4)';
+      btn.style.color = '#2ecc71';
+    }
+    // Init FCM silencieusement
+    initNotifications('client');
+    // Cacher après 3s
+    setTimeout(() => {
+      if (wrapper) wrapper.style.display = 'none';
+    }, 3000);
+  } else if (perm === 'denied') {
+    if (btn) {
+      btn.innerHTML = '🔕 Cliquez pour débloquer';
+      btn.style.color = 'rgba(231,76,60,0.8)';
+      btn.style.borderColor = 'rgba(231,76,60,0.3)';
+      btn.disabled = false;
+    }
+  } else {
+    // 'default' — afficher le bouton normalement
+    if (btn) {
+      btn.innerHTML = '🔔 Activer les notifications';
+      btn.disabled = false;
+    }
+  }
+
+  // Écouter les changements de permission en temps réel (Chrome)
+  if (navigator.permissions) {
+    navigator.permissions.query({ name: 'notifications' }).then(status => {
+      status.onchange = () => {
+        console.log('Permission changée :', status.state);
+        if (status.state === 'granted') {
+          if (btn) {
+            btn.innerHTML = '✅ Notifications activées';
+            btn.style.borderColor = 'rgba(46,204,113,0.4)';
+            btn.style.color = '#2ecc71';
+          }
+          initNotifications('client');
+          setTimeout(() => { if (wrapper) wrapper.style.display = 'none'; }, 3000);
+        }
+      };
+    });
+  }
+});
+
+
 const _origShowAdminPanel = typeof _showAdminPanel !== 'undefined' ? _showAdminPanel : null;
 
 function initAdminNotifications() {
