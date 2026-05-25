@@ -2375,6 +2375,53 @@
 </div>
 
 
+<!-- VÉRIFICATION IMEI -->
+<div class="tracking-section" id="imei-check-section" style="border-top:1px solid rgba(232,184,75,0.15);">
+  <h2>VÉRIFIER<br><span style="color:var(--or);">VOTRE IMEI</span></h2>
+  <p class="tracking-sub">Gratuit · Marque · Modèle · Validité · Statut réseau</p>
+
+  <!-- Comment obtenir son IMEI -->
+  <div style="border:1px solid rgba(232,184,75,0.15);padding:0.8rem 1rem;background:rgba(232,184,75,0.04);margin-bottom:1.2rem;display:flex;align-items:center;gap:0.8rem;">
+    <span style="font-size:1.3rem;">📱</span>
+    <div>
+      <div style="font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:0.08em;color:var(--or);margin-bottom:0.2rem;text-transform:uppercase;">Comment obtenir votre IMEI ?</div>
+      <div style="font-family:'DM Sans',sans-serif;font-size:0.8rem;color:rgba(245,240,232,0.65);line-height:1.5;">
+        Composez <strong style="color:var(--blanc);font-family:'Space Mono',monospace;">*#06#</strong> sur votre téléphone — l'IMEI s'affiche automatiquement
+      </div>
+    </div>
+  </div>
+
+  <!-- Champ IMEI -->
+  <div class="track-input-row" style="margin-bottom:0.6rem;">
+    <input type="tel" id="imei-input"
+      placeholder="Entrez votre IMEI (15 chiffres)"
+      maxlength="15"
+      oninput="this.value=this.value.replace(/\D/g,''); validateImeiInput(this.value)"
+      style="font-family:'Space Mono',monospace;font-size:0.9rem;letter-spacing:0.06em;" />
+    <button class="btn-track" onclick="checkImei()" id="btn-imei-check">
+      🔍 Vérifier
+    </button>
+  </div>
+
+  <!-- Indicateur de validité IMEI en temps réel -->
+  <div id="imei-validity" style="font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:0.08em;margin-bottom:1rem;display:none;"></div>
+
+  <!-- Résultat -->
+  <div id="imei-result"></div>
+
+  <!-- Services payants -->
+  <div style="margin-top:1.2rem;border:1px solid rgba(232,184,75,0.15);padding:1rem;background:rgba(232,184,75,0.03);">
+    <div style="font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--or);margin-bottom:0.6rem;">🔒 Vérifications avancées (payantes)</div>
+    <div style="font-family:'DM Sans',sans-serif;font-size:0.8rem;color:rgba(245,240,232,0.6);line-height:1.6;margin-bottom:0.8rem;">
+      Statut liste noire · Opérateur réseau · iCloud lock · FRP · Historique réparations
+    </div>
+    <a href="https://wa.me/22996972933?text=Je%20veux%20une%20vérification%20IMEI%20avancée" target="_blank"
+      style="display:inline-flex;align-items:center;gap:0.5rem;font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:0.5rem 1rem;text-decoration:none;transition:all 0.2s;">
+      💬 Demander via WhatsApp
+    </a>
+  </div>
+</div>
+
 <!-- SUIVI COMMANDE -->
 <div class="tracking-section">
   <h2>SUIVI DE<br><span>COMMANDE</span></h2>
@@ -3889,6 +3936,123 @@ function showStatusBanner(orderCode, status, note) {
 
   document.body.appendChild(banner);
   setTimeout(() => banner?.remove(), 10000);
+}
+
+// ══════════════════════════════════════════════════════════
+// VÉRIFICATION IMEI GRATUITE
+// ══════════════════════════════════════════════════════════
+function luhnCheck(imei) {
+  if (!/^\d{15}$/.test(imei)) return false;
+  let sum = 0;
+  for (let i = 0; i < 15; i++) {
+    let digit = parseInt(imei[i]);
+    if (i % 2 === 1) { digit *= 2; if (digit > 9) digit -= 9; }
+    sum += digit;
+  }
+  return sum % 10 === 0;
+}
+
+function getLocalImeiInfo(imei) {
+  const p2 = imei.substring(0,2);
+  const p6 = imei.substring(0,6);
+  const tacDB = {
+    '353288':{ brand:'Apple',   model:'iPhone (ancienne série)', type:'GSM' },
+    '353279':{ brand:'Apple',   model:'iPhone',                  type:'GSM' },
+    '358240':{ brand:'Samsung', model:'Galaxy série A',          type:'GSM/LTE' },
+    '354833':{ brand:'Tecno',   model:'Tecno',                   type:'GSM' },
+    '865166':{ brand:'Huawei',  model:'Huawei',                  type:'GSM/LTE' },
+    '869327':{ brand:'Xiaomi',  model:'Xiaomi / Redmi',          type:'GSM/LTE' },
+    '864067':{ brand:'Infinix', model:'Infinix',                 type:'GSM/LTE' },
+    '352398':{ brand:'Nokia',   model:'Nokia',                   type:'GSM' },
+  };
+  const brandByPrefix = {
+    '35':'Apple / Nokia / Samsung','86':'Huawei / Xiaomi / Oppo',
+    '52':'Tecno / Itel / Infinix','01':'Samsung','49':'Samsung',
+    '36':'Motorola','31':'LG','44':'Sony',
+  };
+  return tacDB[p6] || { brand: brandByPrefix[p2] || 'Fabricant inconnu', model:'Modèle non identifié', type:'GSM' };
+}
+
+function validateImeiInput(val) {
+  const el  = document.getElementById('imei-validity');
+  const btn = document.getElementById('btn-imei-check');
+  if (!el) return;
+  if (!val.length) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  if (val.length < 15) {
+    el.innerHTML = `<span style="color:rgba(232,184,75,0.7);">⏳ ${val.length}/15 chiffres</span>`;
+    if (btn) btn.disabled = true;
+  } else if (luhnCheck(val)) {
+    el.innerHTML = `<span style="color:#2ecc71;">✅ IMEI valide</span>`;
+    if (btn) btn.disabled = false;
+  } else {
+    el.innerHTML = `<span style="color:#e74c3c;">❌ IMEI invalide — vérifiez le numéro</span>`;
+    if (btn) btn.disabled = true;
+  }
+}
+
+function imeiRow(label, value) {
+  return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.45rem 0;border-bottom:1px solid rgba(232,184,75,0.06);gap:1rem;">
+    <span style="font-family:'Space Mono',monospace;font-size:0.58rem;color:rgba(245,240,232,0.35);flex-shrink:0;">${label}</span>
+    <span style="font-size:0.82rem;color:#f5f0e8;text-align:right;">${value}</span>
+  </div>`;
+}
+
+async function checkImei() {
+  const imei = (document.getElementById('imei-input').value || '').trim();
+  const el   = document.getElementById('imei-result');
+  const btn  = document.getElementById('btn-imei-check');
+  if (!imei || imei.length !== 15) {
+    el.innerHTML = `<div style="color:#e74c3c;font-family:'Space Mono',monospace;font-size:0.65rem;padding:0.8rem;border:1px solid rgba(231,76,60,0.3);">❌ Entrez un IMEI de 15 chiffres</div>`;
+    return;
+  }
+  if (!luhnCheck(imei)) {
+    el.innerHTML = `<div style="color:#e74c3c;font-family:'Space Mono',monospace;font-size:0.65rem;padding:0.8rem;border:1px solid rgba(231,76,60,0.3);">❌ IMEI invalide (algorithme Luhn)</div>`;
+    return;
+  }
+  btn.textContent = '⏳ Vérification…';
+  btn.disabled    = true;
+  el.innerHTML    = `<div style="padding:1rem;border:1px solid rgba(232,184,75,0.15);font-family:'Space Mono',monospace;font-size:0.62rem;color:rgba(245,240,232,0.35);text-align:center;">🔍 Recherche en cours…</div>`;
+
+  // Tentative API gratuite ImeiCheck.com
+  let apiData = null;
+  try {
+    const res = await fetch(`https://alpha.imeicheck.com/api/modelBrandName?imei=${imei}&format=json`,
+      { signal: AbortSignal.timeout(5000) });
+    if (res.ok) apiData = await res.json();
+  } catch(e) { console.warn('IMEI API:', e.message); }
+
+  btn.textContent = '🔍 Vérifier';
+  btn.disabled    = false;
+
+  const local  = getLocalImeiInfo(imei);
+  const marque = apiData?.brandName || local.brand;
+  const modele = apiData?.modelName || local.model;
+  const source = apiData ? ' + Base de données' : ' (local)';
+
+  el.innerHTML = `
+    <div style="border:1px solid rgba(46,204,113,0.3);overflow:hidden;animation:slideUp 0.3s ease;">
+      <div style="background:rgba(46,204,113,0.08);padding:0.9rem 1.2rem;border-bottom:1px solid rgba(46,204,113,0.15);display:flex;align-items:center;gap:0.8rem;">
+        <span style="font-size:1.5rem;">✅</span>
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#2ecc71;letter-spacing:0.06em;">IMEI VALIDE</div>
+          <div style="font-family:'Space Mono',monospace;font-size:0.5rem;color:rgba(245,240,232,0.35);letter-spacing:0.08em;">Algorithme Luhn${source}</div>
+        </div>
+      </div>
+      <div style="padding:1rem 1.2rem;">
+        ${imeiRow('📱 IMEI', imei)}
+        ${imeiRow('🏷️ Marque', marque)}
+        ${imeiRow('📲 Modèle', modele)}
+        ${imeiRow('🔢 TAC', imei.substring(0,6) + '...')}
+        ${imeiRow('📶 Type', local.type)}
+        ${imeiRow('🔒 Statut', '<span style="color:#2ecc71;">Format valide ✓</span>')}
+      </div>
+      <div style="padding:0.7rem 1.2rem;border-top:1px solid rgba(232,184,75,0.1);background:rgba(232,184,75,0.04);">
+        <div style="font-family:'Space Mono',monospace;font-size:0.5rem;color:rgba(245,240,232,0.3);line-height:1.6;letter-spacing:0.04em;">
+          ⚠️ Vérification du format uniquement. Pour statut liste noire, opérateur ou iCloud → WhatsApp.
+        </div>
+      </div>
+    </div>`;
 }
 
 // ── Bouton activation notifications ──────────────────────
