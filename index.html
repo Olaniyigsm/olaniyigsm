@@ -1814,6 +1814,23 @@
   }
   img, svg { image-rendering: crisp-edges; }
 
+  /* ── ONGLETS CATÉGORIES COMMANDE ── */
+  .cat-tab {
+    background: transparent;
+    color: rgba(245,240,232,0.45);
+    border: none;
+    transition: all 0.2s;
+  }
+  .cat-tab:hover {
+    background: rgba(232,184,75,0.06);
+    color: rgba(245,240,232,0.7);
+  }
+  .cat-tab.active {
+    background: rgba(232,184,75,0.12);
+    color: var(--or);
+  }
+  .cat-panel { animation: slideUp 0.25s ease; }
+
   /* ── SÉLECTEUR DE LANGUE ── */
   .lang-switcher {
     position: fixed;
@@ -1917,221 +1934,181 @@
     </div>
   </div>
 
-  <!-- ÉTAPE 1 : Choix du service -->
+  <!-- ÉTAPE 1 : Choix de catégorie + service -->
   <div id="step1">
 
-    <!-- Barre de recherche services -->
+    <!-- Onglets catégories -->
+    <div style="display:flex;gap:0;margin-bottom:1.2rem;border:1px solid rgba(232,184,75,0.2);overflow:hidden;">
+      <button class="cat-tab active" id="tab-imei" onclick="switchTab('imei')" style="flex:1;font-family:'Space Mono',monospace;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.75rem 0.3rem;border:none;cursor:pointer;transition:all 0.2s;border-right:1px solid rgba(232,184,75,0.2);">
+        🔓 IMEI
+      </button>
+      <button class="cat-tab" id="tab-serveur" onclick="switchTab('serveur')" style="flex:1;font-family:'Space Mono',monospace;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.75rem 0.3rem;border:none;cursor:pointer;transition:all 0.2s;border-right:1px solid rgba(232,184,75,0.2);">
+        🖥️ SERVEUR
+      </button>
+      <button class="cat-tab" id="tab-remote" onclick="switchTab('remote')" style="flex:1;font-family:'Space Mono',monospace;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.75rem 0.3rem;border:none;cursor:pointer;transition:all 0.2s;">
+        📡 REMOTE
+      </button>
+    </div>
+
+    <!-- Barre de recherche -->
     <div style="position:relative;margin-bottom:1rem;">
       <input type="text" id="service-search"
-        placeholder="🔍 Rechercher un service, logiciel ou outil…"
+        placeholder="🔍 Rechercher un service…"
         oninput="filterServices(this.value)"
-        style="width:100%;background:rgba(255,255,255,0.05);
-          border:1px solid rgba(232,184,75,0.3);color:#f5f0e8;
-          font-family:'DM Sans',sans-serif;font-size:1rem;
-          padding:0.85rem 1rem 0.85rem 2.8rem;outline:none;
-          transition:all 0.2s;box-sizing:border-box;"
+        style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(232,184,75,0.3);color:#f5f0e8;font-family:'DM Sans',sans-serif;font-size:1rem;padding:0.85rem 1rem 0.85rem 2.8rem;outline:none;transition:all 0.2s;box-sizing:border-box;"
         onfocus="this.style.borderColor='#e8b84b';this.style.background='rgba(232,184,75,0.05)'"
         onblur="this.style.borderColor='rgba(232,184,75,0.3)';this.style.background='rgba(255,255,255,0.05)'" />
-      <span style="position:absolute;left:0.9rem;top:50%;transform:translateY(-50%);
-        font-size:1rem;pointer-events:none;">🔍</span>
-      <button id="search-clear" onclick="clearSearch()" style="
-        display:none;position:absolute;right:0.8rem;top:50%;transform:translateY(-50%);
-        background:none;border:none;color:rgba(245,240,232,0.4);cursor:pointer;
-        font-size:1rem;padding:0.2rem;">✕</button>
+      <span style="position:absolute;left:0.9rem;top:50%;transform:translateY(-50%);font-size:1rem;pointer-events:none;">🔍</span>
+      <button id="search-clear" onclick="clearSearch()" style="display:none;position:absolute;right:0.8rem;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(245,240,232,0.4);cursor:pointer;font-size:1rem;">✕</button>
     </div>
 
-    <!-- Message aucun résultat -->
-    <div id="no-result" style="display:none;text-align:center;padding:1.2rem;
-      font-family:'Space Mono',monospace;font-size:0.65rem;letter-spacing:0.08em;
-      color:rgba(245,240,232,0.35);border:1px solid rgba(232,184,75,0.1);
-      background:rgba(232,184,75,0.03);">
-      ❌ Aucun service trouvé — essayez un autre mot clé
-      <br><a href="https://wa.me/22996972933" target="_blank"
-        style="color:#e8b84b;text-decoration:none;display:inline-block;margin-top:0.5rem;">
-        💬 Contactez-nous sur WhatsApp
-      </a>
+    <div id="no-result" style="display:none;text-align:center;padding:1.2rem;font-family:'Space Mono',monospace;font-size:0.65rem;letter-spacing:0.08em;color:rgba(245,240,232,0.35);border:1px solid rgba(232,184,75,0.1);background:rgba(232,184,75,0.03);">
+      ❌ Aucun service trouvé
+      <br><a href="https://wa.me/22996472933" target="_blank" style="color:#e8b84b;text-decoration:none;display:inline-block;margin-top:0.5rem;">💬 Contactez-nous sur WhatsApp</a>
     </div>
 
-    <div class="service-cards" id="service-cards-grid">
-      <div class="service-card" onclick="selectService('imei')" id="card-imei">
-        <div class="selected-check">✓</div>
-        <span class="card-emoji">🔓</span>
-        <div class="card-name" id="svc-imei-name">Déblocage IMEI</div>
-        <div class="card-price">2 000 – 25 000 FCFA</div>
-        <div class="card-delay" id="svc-imei-delay">20min – 72h selon modèle</div>
+    <!-- ── CATÉGORIE IMEI ── -->
+    <div id="cat-imei" class="cat-panel">
+      <div style="font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(232,184,75,0.6);margin-bottom:0.8rem;padding:0.4rem 0.8rem;border-left:3px solid var(--or);">
+        🔓 Commandes IMEI — Déverrouillage réseau & iCloud
       </div>
-      <div class="service-card" onclick="selectService('frp')" id="card-frp">
-        <div class="selected-check">✓</div>
-        <span class="card-emoji">🛡️</span>
-        <div class="card-name" id="svc-frp-name">Suppression FRP</div>
-        <div class="card-price">2 000 – 8 000 FCFA</div>
-        <div class="card-delay" id="svc-frp-delay">30min – 24h</div>
-      </div>
-      <div class="service-card" onclick="selectService('icloud')" id="card-icloud">
-        <div class="selected-check">✓</div>
-        <span class="card-emoji">☁️</span>
-        <div class="card-name" id="svc-icloud-name">Suppression iCloud</div>
-        <div class="card-price">4 000 – 200 000 FCFA</div>
-        <div class="card-delay" id="svc-icloud-delay">20min – 40 jours selon modèle</div>
-      </div>
-      <div class="service-card" onclick="selectService('flash')" id="card-flash">
-        <div class="selected-check">✓</div>
-        <span class="card-emoji">⚡</span>
-        <div class="card-name" id="svc-flash-name">Flash / Logiciel</div>
-        <div class="card-price">3 000 – 15 000 FCFA</div>
-        <div class="card-delay" id="svc-flash-delay">1 – 24h</div>
-      </div>
-      <div class="service-card" onclick="selectService('mdm')" id="card-mdm" style="grid-column: 1 / -1;">
-        <div class="selected-check">✓</div>
-        <span class="card-emoji">🌍</span>
-        <div class="card-name" id="svc-mdm-name">Déblocage MDM Régional — Tecno · Infinix · Itel</div>
-        <div class="card-price">10 000 – 15 000 FCFA</div>
-        <div class="card-delay" id="svc-mdm-delay">1 – 24h</div>
-      </div>
-      <div class="service-card" onclick="selectService('rent')" id="card-rent" style="grid-column: 1 / -1;">
-        <div class="selected-check">✓</div>
-        <span class="card-emoji">💻</span>
-        <div class="card-name" id="svc-rent-name">Location Logiciel — Rent Tool Digital</div>
-        <div class="card-price">1 000 – 20 000 FCFA</div>
-        <div class="card-delay" id="svc-rent-delay">2h – 2 jours selon outil</div>
-      </div>
-    </div>
-
-    <!-- Sélecteur logiciel RENT (visible seulement si rent sélectionné) -->
-    <div id="rent-selector" style="display:none;margin-bottom:1rem;animation:slideUp 0.3s ease;">
-      <div style="font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(245,240,232,0.4);margin-bottom:0.8rem;">
-        Choisissez votre logiciel ↓
-      </div>
-
-      <!-- Barre de recherche RENT -->
-      <div style="position:relative;margin-bottom:0.8rem;">
-        <input type="text" id="rent-search"
-          placeholder="🔍 Rechercher un logiciel de location…"
-          oninput="filterRentTools(this.value)"
-          style="width:100%;background:rgba(255,255,255,0.04);
-            border:1px solid rgba(232,184,75,0.25);color:#f5f0e8;
-            font-family:'DM Sans',sans-serif;font-size:1rem;
-            padding:0.75rem 2.5rem 0.75rem 0.9rem;outline:none;
-            transition:all 0.2s;box-sizing:border-box;"
-          onfocus="this.style.borderColor='#e8b84b'"
-          onblur="this.style.borderColor='rgba(232,184,75,0.25)'" />
-        <button onclick="clearRentSearch()" id="rent-search-clear" style="
-          display:none;position:absolute;right:0.7rem;top:50%;transform:translateY(-50%);
-          background:none;border:none;color:rgba(245,240,232,0.4);cursor:pointer;font-size:0.9rem;">✕</button>
-      </div>
-      <div id="rent-no-result" style="display:none;font-family:'Space Mono',monospace;
-        font-size:0.6rem;letter-spacing:0.06em;color:rgba(245,240,232,0.3);
-        text-align:center;padding:0.8rem;border:1px solid rgba(232,184,75,0.1);">
-        ❌ Aucun logiciel trouvé
-      </div>
-
-      <div style="display:flex;flex-direction:column;gap:0.5rem;" id="rent-tools-list">
-        <!-- Généré par JS -->
-      </div>
-      <a href="https://wa.me/22996972933" target="_blank" style="display:inline-flex;align-items:center;gap:0.5rem;margin-top:0.8rem;font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:0.5rem 1rem;text-decoration:none;transition:all 0.2s;">
-        💬 Autre logiciel ? Contactez le support
-      </a>
-    </div>
-
-    <!-- Carte VENTE -->
-    <div class="service-card" onclick="selectService('vente')" id="card-vente" style="grid-column: 1 / -1; margin-top: 0.7rem;">
-      <div class="selected-check">✓</div>
-      <span class="card-emoji">🛍️</span>
-      <div class="card-name" id="svc-vente-name">Achat Logiciel / Dongle — Activation</div>
-      <div class="card-price">500 – 123 500 FCFA</div>
-      <div class="card-delay" id="svc-vente-delay">Livraison immédiate après paiement</div>
-    </div>
-
-    <!-- Sélecteur VENTE -->
-    <div id="vente-selector" style="display:none;margin-bottom:1rem;animation:slideUp 0.3s ease;">
-      <div style="font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(245,240,232,0.4);margin-bottom:1rem;">
-        Choisissez le produit et la durée ↓
-      </div>
-
-      <!-- Barre de recherche VENTE -->
-      <div style="position:relative;margin-bottom:0.8rem;">
-        <input type="text" id="vente-search"
-          placeholder="🔍 Rechercher un logiciel ou dongle…"
-          oninput="filterVenteProducts(this.value)"
-          style="width:100%;background:rgba(255,255,255,0.04);
-            border:1px solid rgba(232,184,75,0.25);color:#f5f0e8;
-            font-family:'DM Sans',sans-serif;font-size:1rem;
-            padding:0.75rem 2.5rem 0.75rem 0.9rem;outline:none;
-            transition:all 0.2s;box-sizing:border-box;"
-          onfocus="this.style.borderColor='#e8b84b'"
-          onblur="this.style.borderColor='rgba(232,184,75,0.25)'" />
-        <button onclick="clearVenteSearch()" id="vente-search-clear" style="
-          display:none;position:absolute;right:0.7rem;top:50%;transform:translateY(-50%);
-          background:none;border:none;color:rgba(245,240,232,0.4);cursor:pointer;font-size:0.9rem;">✕</button>
-      </div>
-      <div id="vente-no-result" style="display:none;font-family:'Space Mono',monospace;
-        font-size:0.6rem;letter-spacing:0.06em;color:rgba(245,240,232,0.3);
-        text-align:center;padding:0.8rem;border:1px solid rgba(232,184,75,0.1);">
-        ❌ Aucun produit trouvé — <a href="https://wa.me/22996972933" target="_blank" style="color:#e8b84b;text-decoration:none;">Contactez-nous</a>
-      </div>
-
-      <div id="vente-list"><!-- Généré par JS --></div>
-
-      <!-- Section personnalisée -->
-      <div style="border:1px solid rgba(232,184,75,0.2);background:rgba(232,184,75,0.04);margin-top:0.8rem;overflow:hidden;">
-        <div style="padding:0.8rem 1rem;border-bottom:1px solid rgba(232,184,75,0.1);background:rgba(232,184,75,0.06);">
-          <div style="font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;color:#e8b84b;">🔍 Autre logiciel / Crédits non listés</div>
-          <div style="font-family:'Space Mono',monospace;font-size:0.5rem;color:rgba(245,240,232,0.3);margin-top:0.2rem;letter-spacing:0.04em;">Prix variable : 500 – 90 000 FCFA · Traitement via WhatsApp</div>
+      <div class="service-cards" id="service-cards-grid">
+        <div class="service-card" onclick="selectService('imei')" id="card-imei">
+          <div class="selected-check">✓</div>
+          <span class="card-emoji">🔓</span>
+          <div class="card-name" id="svc-imei-name">Déblocage IMEI</div>
+          <div class="card-price">2 000 – 25 000 FCFA</div>
+          <div class="card-delay" id="svc-imei-delay">20min – 72h selon modèle</div>
         </div>
-        <div style="padding:0.9rem 1rem;">
-          <input type="text" id="vente-custom-name" placeholder="Nom du logiciel, outil ou crédit souhaité"
-            style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(232,184,75,0.2);color:#f5f0e8;font-family:'DM Sans',sans-serif;font-size:0.82rem;padding:0.7rem 1rem;outline:none;margin-bottom:0.6rem;box-sizing:border-box;transition:border-color 0.2s;"
-            oninput="checkVenteCustom()" />
-          <input type="text" id="vente-custom-nom" placeholder="Votre prénom et ville *"
-            style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(232,184,75,0.2);color:#f5f0e8;font-family:'DM Sans',sans-serif;font-size:0.82rem;padding:0.7rem 1rem;outline:none;margin-bottom:0.6rem;box-sizing:border-box;transition:border-color 0.2s;" />
-          <div style="display:flex;gap:0.5rem;margin-bottom:0.6rem;">
-            <select id="vente-custom-indicatif" style="background:rgba(255,255,255,0.04);border:1px solid rgba(232,184,75,0.2);color:#f5f0e8;font-family:'Space Mono',monospace;font-size:0.7rem;padding:0.7rem 0.5rem;outline:none;flex-shrink:0;width:42%;box-sizing:border-box;">
-              <option value="+229">🇧🇯 +229 Bénin</option>
-              <option value="+225">🇨🇮 +225 Côte d'Ivoire</option>
-              <option value="+221">🇸🇳 +221 Sénégal</option>
-              <option value="+223">🇲🇱 +223 Mali</option>
-              <option value="+226">🇧🇫 +226 Burkina</option>
-              <option value="+227">🇳🇪 +227 Niger</option>
-              <option value="+228">🇹🇬 +228 Togo</option>
-              <option value="+237">🇨🇲 +237 Cameroun</option>
-              <option value="+234">🇳🇬 +234 Nigeria</option>
-              <option value="+33"> 🇫🇷 +33  France</option>
-              <option value="+32"> 🇧🇪 +32  Belgique</option>
-              <option value="+1">  🇺🇸 +1   USA/Canada</option>
-              <option value="autre">🌍 Autre</option>
-            </select>
-            <input type="tel" id="vente-custom-tel" placeholder="Numéro sans indicatif *"
-              style="flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(232,184,75,0.2);color:#f5f0e8;font-family:'DM Sans',sans-serif;font-size:0.82rem;padding:0.7rem 1rem;outline:none;box-sizing:border-box;transition:border-color 0.2s;" />
-          </div>
-          <div style="font-family:'Space Mono',monospace;font-size:0.5rem;color:rgba(245,240,232,0.25);letter-spacing:0.04em;margin-bottom:0.8rem;">
-            ※ Entrez votre numéro sans le 0 initial ni l'indicatif
-          </div>
-          <button onclick="sendCustomOrder()" style="width:100%;background:#25D366;color:#fff;font-family:'Space Mono',monospace;font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;border:none;padding:0.9rem;cursor:pointer;transition:all 0.2s;">
-            💬 Envoyer la demande sur WhatsApp
-          </button>
-          <div id="custom-order-code" style="display:none;margin-top:0.8rem;padding:0.8rem;border:1px solid rgba(232,184,75,0.3);background:rgba(232,184,75,0.05);text-align:center;">
-            <div style="font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(245,240,232,0.4);margin-bottom:0.3rem;">Votre code de suivi</div>
-            <div id="custom-code-val" style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#e8b84b;letter-spacing:0.1em;"></div>
-            <div style="font-family:'Space Mono',monospace;font-size:0.5rem;color:rgba(245,240,232,0.3);margin-top:0.2rem;">Utilisez ce code dans "Suivi de commande" pour suivre votre demande</div>
-          </div>
+        <div class="service-card" onclick="selectService('icloud')" id="card-icloud">
+          <div class="selected-check">✓</div>
+          <span class="card-emoji">☁️</span>
+          <div class="card-name" id="svc-icloud-name">Suppression iCloud</div>
+          <div class="card-price">4 000 – 200 000 FCFA</div>
+          <div class="card-delay" id="svc-icloud-delay">20min – 40 jours selon modèle</div>
+        </div>
+        <div class="service-card" onclick="selectService('mdm')" id="card-mdm">
+          <div class="selected-check">✓</div>
+          <span class="card-emoji">🌍</span>
+          <div class="card-name" id="svc-mdm-name">MDM Régional Tecno · Infinix · Itel</div>
+          <div class="card-price">10 000 – 15 000 FCFA</div>
+          <div class="card-delay" id="svc-mdm-delay">1 – 24h</div>
+        </div>
+        <div class="service-card" onclick="selectService('frp')" id="card-frp">
+          <div class="selected-check">✓</div>
+          <span class="card-emoji">🛡️</span>
+          <div class="card-name" id="svc-frp-name">Suppression FRP</div>
+          <div class="card-price">2 000 – 8 000 FCFA</div>
+          <div class="card-delay" id="svc-frp-delay">30min – 24h</div>
         </div>
       </div>
-
-      <a href="https://wa.me/22996972933" target="_blank" style="display:inline-flex;align-items:center;gap:0.5rem;margin-top:0.8rem;font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:0.5rem 1rem;text-decoration:none;">
-        💬 Commander via WhatsApp
-      </a>
     </div>
 
-    <button class="btn-order" id="btn-step1" onclick="goStep(2)" disabled
-      style="position:relative;overflow:hidden;">
+    <!-- ── CATÉGORIE SERVEUR ── -->
+    <div id="cat-serveur" class="cat-panel" style="display:none;">
+      <div style="font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(232,184,75,0.6);margin-bottom:0.8rem;padding:0.4rem 0.8rem;border-left:3px solid var(--or);">
+        🖥️ Commandes Serveur — Achat logiciels & dongles
+      </div>
+      <div class="service-cards">
+        <div class="service-card" onclick="selectService('vente')" id="card-vente" style="grid-column:1/-1;">
+          <div class="selected-check">✓</div>
+          <span class="card-emoji">🛍️</span>
+          <div class="card-name" id="svc-vente-name">Achat Logiciel / Dongle — Activation</div>
+          <div class="card-price">500 – 123 500 FCFA</div>
+          <div class="card-delay" id="svc-vente-delay">Livraison immédiate après paiement</div>
+        </div>
+      </div>
+      <!-- Sélecteur VENTE -->
+      <div id="vente-selector" style="display:none;margin-bottom:1rem;animation:slideUp 0.3s ease;">
+        <div style="font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(245,240,232,0.4);margin-bottom:1rem;">Choisissez le produit et la durée ↓</div>
+        <div style="position:relative;margin-bottom:0.8rem;">
+          <input type="text" id="vente-search" placeholder="🔍 Rechercher un logiciel ou dongle…" oninput="filterVenteProducts(this.value)"
+            style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(232,184,75,0.25);color:#f5f0e8;font-family:'DM Sans',sans-serif;font-size:1rem;padding:0.75rem 2.5rem 0.75rem 0.9rem;outline:none;transition:all 0.2s;box-sizing:border-box;"
+            onfocus="this.style.borderColor='#e8b84b'" onblur="this.style.borderColor='rgba(232,184,75,0.25)'" />
+          <button onclick="clearVenteSearch()" id="vente-search-clear" style="display:none;position:absolute;right:0.7rem;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(245,240,232,0.4);cursor:pointer;font-size:0.9rem;">✕</button>
+        </div>
+        <div id="vente-no-result" style="display:none;font-family:'Space Mono',monospace;font-size:0.6rem;color:rgba(245,240,232,0.3);text-align:center;padding:0.8rem;border:1px solid rgba(232,184,75,0.1);">❌ Aucun produit trouvé — <a href="https://wa.me/22996972933" target="_blank" style="color:#e8b84b;text-decoration:none;">Contactez-nous</a></div>
+        <div id="vente-list"></div>
+        <!-- Section personnalisée -->
+        <div style="border:1px solid rgba(232,184,75,0.2);background:rgba(232,184,75,0.04);margin-top:0.8rem;overflow:hidden;">
+          <div style="padding:0.8rem 1rem;border-bottom:1px solid rgba(232,184,75,0.1);background:rgba(232,184,75,0.06);">
+            <div style="font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;color:#e8b84b;">🔍 Autre logiciel / Crédits non listés</div>
+            <div style="font-family:'Space Mono',monospace;font-size:0.5rem;color:rgba(245,240,232,0.3);margin-top:0.2rem;">Prix variable : 500 – 90 000 FCFA</div>
+          </div>
+          <div style="padding:0.9rem 1rem;">
+            <input type="text" id="vente-custom-name" placeholder="Nom du logiciel, outil ou crédit souhaité" oninput="checkVenteCustom()"
+              style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(232,184,75,0.2);color:#f5f0e8;font-family:'DM Sans',sans-serif;font-size:0.82rem;padding:0.7rem 1rem;outline:none;margin-bottom:0.6rem;box-sizing:border-box;" />
+            <input type="text" id="vente-custom-nom" placeholder="Votre prénom et ville *"
+              style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(232,184,75,0.2);color:#f5f0e8;font-family:'DM Sans',sans-serif;font-size:0.82rem;padding:0.7rem 1rem;outline:none;margin-bottom:0.6rem;box-sizing:border-box;" />
+            <div style="display:flex;gap:0.5rem;margin-bottom:0.6rem;">
+              <select id="vente-custom-indicatif" style="background:rgba(255,255,255,0.04);border:1px solid rgba(232,184,75,0.2);color:#f5f0e8;font-family:'Space Mono',monospace;font-size:0.7rem;padding:0.7rem 0.5rem;outline:none;flex-shrink:0;width:42%;box-sizing:border-box;">
+                <option value="+229">🇧🇯 +229 Bénin</option><option value="+225">🇨🇮 +225 Côte d'Ivoire</option>
+                <option value="+221">🇸🇳 +221 Sénégal</option><option value="+223">🇲🇱 +223 Mali</option>
+                <option value="+226">🇧🇫 +226 Burkina</option><option value="+227">🇳🇪 +227 Niger</option>
+                <option value="+228">🇹🇬 +228 Togo</option><option value="+237">🇨🇲 +237 Cameroun</option>
+                <option value="+234">🇳🇬 +234 Nigeria</option><option value="+33">🇫🇷 +33 France</option>
+                <option value="+32">🇧🇪 +32 Belgique</option><option value="+1">🇺🇸 +1 USA/Canada</option>
+                <option value="autre">🌍 Autre</option>
+              </select>
+              <input type="tel" id="vente-custom-tel" placeholder="Numéro sans indicatif *"
+                style="flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(232,184,75,0.2);color:#f5f0e8;font-family:'DM Sans',sans-serif;font-size:0.82rem;padding:0.7rem 1rem;outline:none;box-sizing:border-box;" />
+            </div>
+            <button onclick="sendCustomOrder()" style="width:100%;background:#25D366;color:#fff;font-family:'Space Mono',monospace;font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;border:none;padding:0.9rem;cursor:pointer;">💬 Envoyer la demande sur WhatsApp</button>
+            <div id="custom-order-code" style="display:none;margin-top:0.8rem;padding:0.8rem;border:1px solid rgba(232,184,75,0.3);background:rgba(232,184,75,0.05);text-align:center;">
+              <div style="font-family:'Space Mono',monospace;font-size:0.52rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(245,240,232,0.4);margin-bottom:0.3rem;">Votre code de suivi</div>
+              <div id="custom-code-val" style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#e8b84b;letter-spacing:0.1em;"></div>
+              <div style="font-family:'Space Mono',monospace;font-size:0.5rem;color:rgba(245,240,232,0.3);margin-top:0.2rem;">Utilisez ce code dans "Suivi de commande"</div>
+            </div>
+          </div>
+        </div>
+        <a href="https://wa.me/22996972933" target="_blank" style="display:inline-flex;align-items:center;gap:0.5rem;margin-top:0.8rem;font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:0.5rem 1rem;text-decoration:none;">💬 Commander via WhatsApp</a>
+      </div>
+    </div>
+
+    <!-- ── CATÉGORIE REMOTE ── -->
+    <div id="cat-remote" class="cat-panel" style="display:none;">
+      <div style="font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(232,184,75,0.6);margin-bottom:0.8rem;padding:0.4rem 0.8rem;border-left:3px solid var(--or);">
+        📡 Commandes Remote — Flash & Location logiciels
+      </div>
+      <div class="service-cards">
+        <div class="service-card" onclick="selectService('flash')" id="card-flash" style="grid-column:1/-1;">
+          <div class="selected-check">✓</div>
+          <span class="card-emoji">⚡</span>
+          <div class="card-name" id="svc-flash-name">Flash / Réparation Logicielle</div>
+          <div class="card-price">3 000 – 15 000 FCFA</div>
+          <div class="card-delay" id="svc-flash-delay">1 – 24h</div>
+        </div>
+        <div class="service-card" onclick="selectService('rent')" id="card-rent" style="grid-column:1/-1;">
+          <div class="selected-check">✓</div>
+          <span class="card-emoji">💻</span>
+          <div class="card-name" id="svc-rent-name">Location Logiciel — Rent Tool Digital</div>
+          <div class="card-price">1 000 – 20 000 FCFA</div>
+          <div class="card-delay" id="svc-rent-delay">2h – 2 jours selon outil</div>
+        </div>
+      </div>
+      <!-- Sélecteur RENT -->
+      <div id="rent-selector" style="display:none;margin-bottom:1rem;animation:slideUp 0.3s ease;">
+        <div style="font-family:'Space Mono',monospace;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:rgba(245,240,232,0.4);margin-bottom:0.8rem;">Choisissez votre logiciel ↓</div>
+        <div style="position:relative;margin-bottom:0.8rem;">
+          <input type="text" id="rent-search" placeholder="🔍 Rechercher un logiciel de location…" oninput="filterRentTools(this.value)"
+            style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(232,184,75,0.25);color:#f5f0e8;font-family:'DM Sans',sans-serif;font-size:1rem;padding:0.75rem 2.5rem 0.75rem 0.9rem;outline:none;transition:all 0.2s;box-sizing:border-box;"
+            onfocus="this.style.borderColor='#e8b84b'" onblur="this.style.borderColor='rgba(232,184,75,0.25)'" />
+          <button onclick="clearRentSearch()" id="rent-search-clear" style="display:none;position:absolute;right:0.7rem;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(245,240,232,0.4);cursor:pointer;font-size:0.9rem;">✕</button>
+        </div>
+        <div id="rent-no-result" style="display:none;font-family:'Space Mono',monospace;font-size:0.6rem;color:rgba(245,240,232,0.3);text-align:center;padding:0.8rem;border:1px solid rgba(232,184,75,0.1);">❌ Aucun logiciel trouvé</div>
+        <div style="display:flex;flex-direction:column;gap:0.5rem;" id="rent-tools-list"></div>
+        <a href="https://wa.me/22996972933" target="_blank" style="display:inline-flex;align-items:center;gap:0.5rem;margin-top:0.8rem;font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:0.5rem 1rem;text-decoration:none;">💬 Autre logiciel ? Contactez le support</a>
+      </div>
+    </div>
+
+    <!-- Bouton Continuer -->
+    <button class="btn-order" id="btn-step1" onclick="goStep(2)" disabled style="position:relative;overflow:hidden;margin-top:1rem;">
       <span id="btn-step1-text">
         <span style="opacity:0.5;font-size:0.6rem;display:block;margin-bottom:0.2rem;letter-spacing:0.1em;">ÉTAPE SUIVANTE</span>
         Remplir mes coordonnées →
       </span>
     </button>
-    <div id="step1-hint" style="display:none;font-family:'Space Mono',monospace;font-size:0.55rem;
-      letter-spacing:0.06em;color:rgba(232,184,75,0.6);text-align:center;margin-top:0.5rem;
-      animation:pulse 1.5s infinite;">
+    <div id="step1-hint" style="display:none;font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:0.06em;color:rgba(232,184,75,0.6);text-align:center;margin-top:0.5rem;animation:pulse 1.5s infinite;">
       ☝️ Appuyez sur le bouton doré ci-dessus pour continuer
     </div>
   </div>
@@ -2141,7 +2118,6 @@
     <div class="order-form">
       <input type="text" id="ord-nom" placeholder="Prénom et ville *" required />
 
-      <!-- Téléphone avec indicatif pays -->
       <div>
         <div style="display:flex;gap:0.5rem;">
           <select id="ord-indicatif" style="
@@ -3276,7 +3252,49 @@ function toggleConverter(payId) {
   if (box.style.display === 'block' && !_usdtRate) fetchUsdtRate();
 }
 
-// ── RECHERCHE RENT ────────────────────────────────────────
+// ── ONGLETS CATÉGORIES COMMANDE ──────────────────────────
+function switchTab(tab) {
+  // Réinitialiser la sélection de service
+  selectedService     = null;
+  selectedRentTool    = null;
+  selectedVenteProduct = null;
+  selectedVenteOption  = null;
+  document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('btn-step1').disabled = true;
+  const hint = document.getElementById('step1-hint');
+  if (hint) hint.style.display = 'none';
+
+  // Masquer tous les panneaux et sélecteurs
+  ['cat-imei','cat-serveur','cat-remote'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  const rentSel  = document.getElementById('rent-selector');
+  const venteSel = document.getElementById('vente-selector');
+  if (rentSel)  rentSel.style.display  = 'none';
+  if (venteSel) venteSel.style.display = 'none';
+
+  // Désactiver tous les onglets
+  document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
+
+  // Activer l'onglet sélectionné
+  const activeTab = document.getElementById('tab-' + tab);
+  const activePanel = document.getElementById('cat-' + tab);
+  if (activeTab)  activeTab.classList.add('active');
+  if (activePanel) activePanel.style.display = 'block';
+}
+
+// Initialiser l'onglet IMEI par défaut au chargement
+document.addEventListener('DOMContentLoaded', () => {
+  const imeiPanel = document.getElementById('cat-imei');
+  if (imeiPanel) imeiPanel.style.display = 'block';
+  ['cat-serveur','cat-remote'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+});
+
+
 function filterRentTools(query) {
   const q     = query.trim().toLowerCase();
   const clear = document.getElementById('rent-search-clear');
