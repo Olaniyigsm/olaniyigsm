@@ -9,6 +9,28 @@
 <meta name="color-scheme" content="dark light">
 <!-- Rendu net sur tous les écrans -->
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+<!-- ══ SÉCURITÉ ══ -->
+<!-- Content Security Policy — bloque les scripts/styles non autorisés -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self' https:;
+  script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googleapis.com https://api.cloudinary.com https://alpha.imeicheck.com;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src 'self' https://fonts.gstatic.com;
+  img-src 'self' data: blob: https://res.cloudinary.com https://www.gstatic.com;
+  connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://api.cloudinary.com https://olaniyi-backend.vercel.app https://alpha.imeicheck.com https://api.coingecko.com https://wa.me;
+  frame-ancestors 'none';
+  form-action 'none';
+  base-uri 'self';
+">
+<!-- Anti-clickjacking -->
+<meta http-equiv="X-Frame-Options" content="DENY">
+<!-- Anti-MIME sniffing -->
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<!-- Anti-XSS intégré au navigateur -->
+<meta http-equiv="X-XSS-Protection" content="1; mode=block">
+<!-- Referrer strict -->
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Olaniyi Mobile Repair Center – Porto-Novo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3716,6 +3738,135 @@ async function sendCustomOrder() {
   }, 1500);
 }
 
+
+// ══════════════════════════════════════════════════════════
+// SÉCURITÉ — Protection contre les attaques courantes
+// ══════════════════════════════════════════════════════════
+
+(function() {
+  'use strict';
+
+  // ── 1. Anti DevTools (détection ouverture console) ───────
+  let devToolsOpen = false;
+  const threshold  = 160;
+
+  function detectDevTools() {
+    const widthDiff  = window.outerWidth  - window.innerWidth  > threshold;
+    const heightDiff = window.outerHeight - window.innerHeight > threshold;
+    if ((widthDiff || heightDiff) && !devToolsOpen) {
+      devToolsOpen = true;
+      console.clear();
+      console.log('%c⛔ Zone réservée', 'color:#e8b84b;font-size:20px;font-weight:bold;');
+      console.log('%cCe site est protégé. Toute tentative de modification est enregistrée.',
+        'color:#e74c3c;font-size:14px;');
+    } else if (!widthDiff && !heightDiff) {
+      devToolsOpen = false;
+    }
+  }
+  setInterval(detectDevTools, 1000);
+
+  // ── 2. Désactiver clic droit ─────────────────────────────
+  document.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    showSecurityToast('🔒 Clic droit désactivé sur ce site');
+  });
+
+  // ── 3. Désactiver raccourcis clavier dangereux ───────────
+  document.addEventListener('keydown', e => {
+    // F12, Ctrl+U, Ctrl+Shift+I/J/C, Ctrl+S
+    if (
+      e.key === 'F12' ||
+      (e.ctrlKey && e.key === 'u') ||
+      (e.ctrlKey && e.shiftKey && ['i','j','c','k'].includes(e.key.toLowerCase())) ||
+      (e.ctrlKey && e.key === 's')
+    ) {
+      e.preventDefault();
+      showSecurityToast('🔒 Action non autorisée');
+    }
+  });
+
+  // ── 4. Anti-copie du code source ─────────────────────────
+  document.addEventListener('copy', e => {
+    const sel = window.getSelection()?.toString() || '';
+    // Autoriser la copie des codes de commande (OMR-) et IMEI
+    if (!sel.startsWith('OMR-') && !/^\d{15}$/.test(sel.trim())) {
+      // Laisser copier les textes courts (noms, prix)
+      if (sel.length > 200) {
+        e.clipboardData?.setData('text/plain', '🔒 Contenu protégé — Olaniyi Mobile Repair');
+        e.preventDefault();
+        showSecurityToast('🔒 Copie limitée sur ce site');
+      }
+    }
+  });
+
+  // ── 5. Sanitisation des inputs (anti-XSS) ────────────────
+  function sanitize(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#x27;')
+      .replace(/\//g, '&#x2F;');
+  }
+  window._sanitize = sanitize;
+
+  // ── 6. Protection anti-iFrame (clickjacking) ─────────────
+  if (window.self !== window.top) {
+    window.top.location = window.self.location;
+  }
+
+  // ── 7. Détection de bots/scripts automatisés ─────────────
+  let humanInteracted = false;
+  ['mousemove','touchstart','keydown','scroll'].forEach(evt => {
+    document.addEventListener(evt, () => { humanInteracted = true; }, { once: true });
+  });
+
+  // Bloquer les soumissions automatiques (bots)
+  window._isHuman = () => humanInteracted;
+
+  // ── 8. Toast sécurité ─────────────────────────────────────
+  function showSecurityToast(msg) {
+    const existing = document.getElementById('sec-toast');
+    if (existing) existing.remove();
+    const t = document.createElement('div');
+    t.id = 'sec-toast';
+    t.style.cssText = `
+      position:fixed;bottom:5rem;left:50%;transform:translateX(-50%);
+      background:#111;border:1px solid rgba(231,76,60,0.5);
+      color:#e74c3c;font-family:'Space Mono',monospace;
+      font-size:0.62rem;letter-spacing:0.08em;
+      padding:0.6rem 1.2rem;z-index:999999;
+      animation:slideUpPop 0.3s ease;white-space:nowrap;`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+
+  // ── 9. Log de sécurité console ────────────────────────────
+  console.log(
+    '%c🔒 Olaniyi Mobile Repair Center',
+    'color:#e8b84b;font-size:16px;font-weight:bold;'
+  );
+  console.log(
+    '%cSite sécurisé · Porto-Novo, Bénin · Toute intrusion est signalée',
+    'color:#e74c3c;font-size:12px;'
+  );
+
+})();
+
+// ── Sanitiser les inputs avant soumission ────────────────
+function sanitizeFormInputs() {
+  ['ord-nom','ord-modele','ord-note','vente-custom-name','vente-custom-nom'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.value) {
+      el.value = el.value
+        .replace(/<script.*?>.*?<\/script>/gi, '')
+        .replace(/[<>]/g, '')
+        .trim();
+    }
+  });
+}
 
 // ══════════════════════════════════════════════════════════
 // MODE SOMBRE / CLAIR
